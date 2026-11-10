@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Антистресс: он опять не ответил</title>
+<meta name="description" content="Мини-игра: он прочитал и не ответил. Сковородка со звёздочками, подушка, носки в стирку. Без травм, только пар.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#191329;--plum:#2c2350;--plum2:#3a2f68;--gold:#e3c27a;--gold2:#c9a35c;
+  --paper:#f5ecdc;--lilac:#b9addb;--dim:#8a7fb0;--goldtext:#2a1f10;--rage:#e86a5a;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:"Golos Text",system-ui,sans-serif;color:var(--paper);background:var(--ink);
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden}
+.app{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  background:radial-gradient(120% 70% at 50% 0%,var(--plum2),var(--ink) 75%);}
+.hidden{display:none!important}
+button{font:600 16px/1.2 "Golos Text",sans-serif;border:0;border-radius:14px;cursor:pointer;
+  min-height:48px;padding:12px 14px;color:var(--paper);background:rgba(255,255,255,.08);
+  box-shadow:inset 0 0 0 1px rgba(185,173,219,.25);touch-action:manipulation}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.main{background:var(--gold);color:var(--goldtext);box-shadow:none}
+
+/* старт */
+#start{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 20px 40px;gap:20px}
+.msgcard{background:rgba(255,255,255,.06);border-radius:18px;padding:16px;box-shadow:inset 0 0 0 1px rgba(185,173,219,.18)}
+.msgcard .who{font-weight:600;font-size:16px}
+.msgcard .seen{font-size:14px;color:var(--dim);margin-top:2px}
+.bubble-me{margin:14px 0 6px auto;width:max-content;max-width:80%;background:var(--plum2);border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:16px}
+.read{text-align:right;font-size:13px;color:var(--lilac)}
+h1{font:600 clamp(26px,7.4vw,34px)/1.15 Unbounded,sans-serif;color:var(--paper);text-wrap:balance}
+h1 span{display:block;color:var(--gold)}
+.lead{font-size:17px;line-height:1.45;color:var(--lilac);max-width:34ch}
+
+/* игра */
+#game{flex:1;display:flex;flex-direction:column;padding:12px 14px 16px;gap:10px}
+.top{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--lilac)}
+.ava{width:34px;height:34px;border-radius:50%;background:#e07a5f;display:grid;place-items:center;font:600 15px Unbounded;color:var(--ink);flex:none}
+.top b{display:block;color:var(--paper);font-size:15px}
+.stage{position:relative;border-radius:20px;overflow:hidden;background:#241c44;box-shadow:inset 0 0 0 1px rgba(185,173,219,.15)}
+.stage svg{display:block;width:100%;height:auto}
+.say{position:absolute;padding:8px 12px;border-radius:14px;font-size:15px;font-weight:500;max-width:62%;
+  background:var(--paper);color:var(--ink);opacity:0;transform:translateY(6px) scale(.9);transition:.2s;pointer-events:none}
+.say.on{opacity:1;transform:none}
+#sayHim{left:46%;top:6%;border-bottom-left-radius:4px}
+#sayMe{right:4%;top:46%;background:var(--plum2);color:var(--paper);border-bottom-right-radius:4px}
+.cap{min-height:44px;text-align:center;font-size:16px;line-height:1.35;color:var(--paper);display:flex;align-items:center;justify-content:center;padding:0 6px}
+.rage{display:flex;align-items:center;gap:10px;font-size:15px}
+.rage .lbl{width:64px;color:var(--lilac)}
+.rage .tr{flex:1;height:14px;border-radius:7px;background:rgba(255,255,255,.1);overflow:hidden}
+.rage .fl{height:100%;width:100%;border-radius:7px;background:linear-gradient(90deg,var(--gold),var(--rage));transition:width .5s cubic-bezier(.3,1.4,.5,1)}
+.rage .pc{width:44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acts button{display:flex;align-items:center;gap:8px;text-align:left}
+.acts svg{width:26px;height:26px;flex:none}
+
+/* финал */
+#end{flex:1;padding:28px 20px 32px;display:flex;flex-direction:column;gap:14px}
+#end h2{font:600 40px/1.1 Unbounded,sans-serif;color:var(--gold)}
+.tally{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:16px;color:var(--lilac);
+  background:rgba(255,255,255,.05);border-radius:16px;padding:14px 16px}
+.tally b{color:var(--paper);font-variant-numeric:tabular-nums}
+.ask{font-size:18px;line-height:1.4}
+.ask small{display:block;margin-top:6px;font-size:15px;color:var(--lilac)}
+#end .btns{display:grid;gap:8px;margin-top:4px}
+#toast{min-height:20px;font-size:14px;color:var(--gold);text-align:center}
+
+/* анимации сцены – координаты в единицах рисунка */
+svg *{transform-box:view-box}
+#pan{opacity:0;transform-origin:62px 100px}
+#head{transform-origin:185px 150px}
+#stars{opacity:0}
+#starsSpin{transform-origin:185px 74px;animation:spin 1.2s linear infinite}
+#eyesX{opacity:0}
+#guy{transform-origin:160px 292px}
+#pillow{opacity:0;transform-origin:255px 118px}
+#pile{transform-origin:244px 298px}
+#stink{animation:stink 2s ease-in-out infinite}
+#eyesUp{opacity:0}
+#phone{transform-origin:185px 185px}
+#drum{transform-origin:320px 236px}
+#beer{transform-origin:45px 226px}
+#drops{opacity:0}
+#drops circle{animation:drip .45s linear infinite}
+#drops circle:nth-child(2){animation-delay:.15s}
+#drops circle:nth-child(3){animation-delay:.3s}
+#phL{transform-origin:56px 68px}
+#phR{transform-origin:86px 68px}
+#screen{animation:glow 3s ease-in-out infinite}
+
+.a-pan #pan{animation:pan 1s ease-in-out}
+.a-pan #head{animation:wobble 1s ease-out}
+.a-pan #stars{animation:show 2s}
+.a-pan #eyesX{animation:show 2s}
+.a-pan #eyesN{animation:hide 2s}
+.a-pillow #pillow{animation:pillow 1.1s ease-out}
+.a-pillow #guy{animation:fall 2s ease-in-out}
+.a-phone #phone{animation:grab 2.4s ease-in-out}
+.a-phone #eyesUp{animation:show2 2.4s}
+.a-phone #eyesN{animation:hide2 2.4s}
+.a-phone #head{animation:look 2.4s ease-in-out}
+.a-beer #beer{animation:beer 2.2s ease-in-out}
+.a-beer #drops{animation:pour 2.2s}
+.a-photo #phL{animation:tearL 2.2s ease-in}
+.a-photo #phR{animation:tearR 2.2s ease-in}
+.a-poke #head{animation:nod .5s}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glow{50%{opacity:.75}}
+@keyframes drip{from{transform:translateY(0);opacity:1}to{transform:translateY(46px);opacity:0}}
+@keyframes pan{0%{opacity:1;transform:rotate(-80deg)}35%{transform:rotate(4deg)}45%{transform:rotate(-6deg)}75%{opacity:1;transform:rotate(-14deg)}100%{opacity:0;transform:rotate(-85deg)}}
+@keyframes wobble{0%,33%{transform:none}45%{transform:rotate(14deg)}60%{transform:rotate(-9deg)}78%{transform:rotate(4deg)}100%{transform:none}}
+@keyframes show{0%,30%{opacity:0}36%,88%{opacity:1}100%{opacity:0}}
+@keyframes hide{0%,30%{opacity:1}36%,88%{opacity:0}100%{opacity:1}}
+@keyframes pillow{0%{opacity:1;transform:translate(170px,-50px) rotate(50deg)}30%{transform:none}45%{transform:translate(-8px,8px) rotate(-14deg)}75%{opacity:1;transform:translate(30px,90px) rotate(30deg)}100%{opacity:0;transform:translate(40px,150px) rotate(40deg)}}
+@keyframes fall{0%,20%{transform:none}38%{transform:rotate(-44deg) translateY(14px)}46%{transform:rotate(-40deg) translateY(10px)}52%,72%{transform:rotate(-44deg) translateY(14px)}100%{transform:none}}
+@keyframes stink{50%{transform:translateY(-4px);opacity:.5}}
+@keyframes grab{0%{transform:none}8%{transform:translateY(4px)}22%{transform:translate(150px,-210px) rotate(320deg)}24%,80%{transform:translate(150px,-210px) rotate(360deg);opacity:0}82%{opacity:1;transform:translate(150px,-210px)}100%{transform:none;opacity:1}}
+@keyframes hide2{0%{opacity:1}6%,88%{opacity:0}100%{opacity:1}}
+@keyframes show2{0%,12%{opacity:0}18%,88%{opacity:1}100%{opacity:0}}
+@keyframes look{0%,15%{transform:none}25%{transform:translateY(-5px)}40%{transform:translateY(-5px) rotate(-10deg)}58%{transform:translateY(-5px) rotate(10deg)}75%{transform:translateY(-5px) rotate(-4deg)}90%,100%{transform:none}}
+@keyframes beer{0%{transform:none;opacity:1}18%{transform:translate(10px,-40px)}35%,75%{transform:translate(10px,-40px) rotate(-120deg);opacity:1}82%{opacity:0;transform:translate(10px,-40px) rotate(-120deg)}83%{opacity:0;transform:none}100%{opacity:1}}
+@keyframes pour{0%,34%{opacity:0}38%,74%{opacity:1}80%,100%{opacity:0}}
+@keyframes tearL{0%{transform:none;opacity:1}18%{transform:translateX(-4px) rotate(-6deg)}60%{transform:translate(-18px,150px) rotate(-40deg);opacity:1}66%,85%{opacity:0;transform:translate(-18px,150px)}86%{opacity:0;transform:none}100%{opacity:1}}
+@keyframes tearR{0%{transform:none;opacity:1}18%{transform:translateX(4px) rotate(6deg)}60%{transform:translate(18px,150px) rotate(40deg);opacity:1}66%,85%{opacity:0;transform:translate(18px,150px)}86%{opacity:0;transform:none}100%{opacity:1}}
+@keyframes nod{40%{transform:rotate(-6deg) translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){#starsSpin,#screen,#drops circle{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- старт -->
+<section id="start">
+  <div class="msgcard">
+    <div class="who">Он</div>
+    <div class="seen">был в сети 2 минуты назад</div>
+    <div class="bubble-me">Ты где? Мы же договаривались</div>
+    <div class="read">Прочитано в 21:14</div>
+  </div>
+  <h1>Антистресс:<span>он опять не ответил</span></h1>
+  <p class="lead">Прочитал три часа назад и молчит. Сковородка, подушка и его носки уже ждут. Без травм – только звёздочки.</p>
+  <button class="main" id="go">Начать</button>
+</section>
+
+<!-- игра -->
+<section id="game" class="hidden">
+  <div class="top">
+    <div class="ava">О</div>
+    <div><b>Он</b>прочитал и молчит</div>
+  </div>
+
+  <div class="stage">
+    <svg id="scene" viewBox="0 0 360 320" role="img" aria-label="Он сидит на диване и смотрит в телефон">
+      <defs>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f2558"/><stop offset="1" stop-color="#3a2f68"/></linearGradient>
+        <radialGradient id="ph" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#bfe9ff" stop-opacity=".55"/><stop offset="1" stop-color="#bfe9ff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="360" height="272" fill="url(#wall)"/>
+      <rect y="270" width="360" height="50" fill="#1e1738"/>
+      <!-- окно с луной -->
+      <rect x="262" y="28" width="76" height="80" rx="6" fill="#191329" stroke="#5c4f94" stroke-width="4"/>
+      <line x1="300" y1="28" x2="300" y2="108" stroke="#5c4f94" stroke-width="3"/>
+      <circle cx="320" cy="52" r="11" fill="#f5ecdc"/><circle cx="325" cy="48" r="10" fill="#191329"/>
+      <circle cx="278" cy="46" r="1.5" fill="#f5ecdc"/><circle cx="288" cy="80" r="1.2" fill="#f5ecdc"/>
+      <!-- фото «мы» -->
+      <g id="phL"><polygon points="40,40 72,40 66,52 74,64 66,78 72,96 40,96" fill="#e3c27a"/>
+        <polygon points="45,45 70,45 64.5,52 72,64 64.5,78 69,91 45,91" fill="#f5ecdc"/>
+        <circle cx="56" cy="64" r="7" fill="#e86a5a"/><rect x="50" y="72" width="12" height="16" rx="5" fill="#e86a5a"/></g>
+      <g id="phR"><polygon points="72,40 100,40 100,96 72,96 66,78 74,64 66,52" fill="#e3c27a"/>
+        <polygon points="74,45 95,45 95,91 74,91 70,78 77,64 70,52" fill="#f5ecdc"/>
+        <circle cx="86" cy="64" r="7" fill="#e07a5f"/><rect x="80" y="72" width="12" height="16" rx="5" fill="#e07a5f"/></g>
+      <!-- столик и пиво -->
+      <rect x="18" y="226" width="56" height="8" rx="3" fill="#6d5aa8"/>
+      <rect x="24" y="234" width="6" height="38" fill="#6d5aa8"/><rect x="62" y="234" width="6" height="38" fill="#6d5aa8"/>
+      <g id="beer"><rect x="38" y="196" width="14" height="30" rx="4" fill="#8a5a2b"/>
+        <rect x="42" y="184" width="6" height="14" rx="2" fill="#8a5a2b"/><rect x="38" y="204" width="14" height="10" fill="#e3c27a"/></g>
+      <g id="drops" fill="#e3c27a"><circle cx="20" cy="206" r="2.5"/><circle cx="21" cy="206" r="2"/><circle cx="19" cy="206" r="2.2"/></g>
+      <!-- стиралка -->
+      <rect x="288" y="190" width="62" height="84" rx="8" fill="#d9d2ee"/>
+      <rect x="294" y="196" width="22" height="6" rx="3" fill="#8a7fb0"/>
+      <circle cx="320" cy="236" r="24" fill="#8a7fb0"/>
+      <g id="drum"><circle cx="320" cy="236" r="18" fill="#3a2f68"/>
+        <path d="M308 236a12 12 0 0 1 12-12" stroke="#b9addb" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="326" cy="244" r="3" fill="#e86a5a"/></g>
+      <!-- кучка его носков на полу -->
+      <g id="pile"><g transform="translate(-122 -155) scale(1.5)">
+        <path d="M226 290h9v10l7 5a3 3 0 0 1-3 5l-13-7z" fill="#e86a5a"/>
+        <path d="M246 286h8v11l7 4a3 3 0 0 1-3 5l-12-6z" fill="#9a93b8" transform="rotate(-25 250 296)"/>
+        <path d="M236 296h8v9l8 3a3 3 0 0 1-2 5l-14-5z" fill="#f5ecdc"/>
+        <rect x="236" y="300" width="8" height="2.5" fill="#e86a5a"/>
+      </g></g>
+      <g id="stink" stroke="#9bd17a" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85">
+        <path d="M228 272q-5-6 0-12t0-12"/><path d="M244 270q-5-6 0-12t0-12"/><path d="M260 272q-5-6 0-12t0-12"/>
+      </g>
+      <!-- диван -->
+      <rect x="96" y="160" width="182" height="58" rx="18" fill="#5a4a8f"/>
+      <rect x="86" y="196" width="202" height="52" rx="14" fill="#6d5aa8"/>
+      <rect x="80" y="186" width="26" height="70" rx="12" fill="#5a4a8f"/>
+      <rect x="268" y="186" width="26" height="70" rx="12" fill="#5a4a8f"/>
+      <rect x="100" y="256" width="10" height="16" fill="#3a2f68"/><rect x="264" y="256" width="10" height="16" fill="#3a2f68"/>
+      <!-- он -->
+      <g id="guy">
+        <rect x="160" y="226" width="16" height="62" rx="7" fill="#3d5a80"/>
+        <rect x="190" y="226" width="16" height="62" rx="7" fill="#3d5a80"/>
+        <g id="feet">
+          <ellipse cx="166" cy="292" rx="13" ry="7" fill="#e86a5a"/><ellipse cx="200" cy="292" rx="13" ry="7" fill="#e86a5a"/>
+          <rect x="159" y="284" width="14" height="4" fill="#f5ecdc"/><rect x="193" y="284" width="14" height="4" fill="#f5ecdc"/>
+        </g>
+        <rect x="148" y="150" width="74" height="86" rx="26" fill="#e07a5f"/>
+        <path d="M168 152l17 14 17-14" stroke="#c4614a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <rect x="150" y="176" width="22" height="16" rx="8" fill="#c4614a" transform="rotate(25 161 184)"/>
+        <rect x="198" y="176" width="22" height="16" rx="8" fill="#c4614a" transform="rotate(-25 209 184)"/>
+        <g id="phone"><rect x="175" y="170" width="20" height="30" rx="4" fill="#191329"/>
+        <rect id="screen" x="177.5" y="173" width="15" height="24" rx="2" fill="#9fdcff"/></g>
+        <circle cx="172" cy="186" r="6" fill="#f2c6a0"/><circle cx="198" cy="186" r="6" fill="#f2c6a0"/>
+        <g id="head">
+          <circle cx="185" cy="116" r="34" fill="#f2c6a0"/>
+          <ellipse cx="185" cy="132" rx="26" ry="16" fill="url(#ph)"/>
+          <path d="M152 108c0-26 20-36 36-34 18 2 32 14 30 34-6-8-14-12-22-12 4 4 4 8 2 10-8-8-24-10-34-6 2-4 2-6 0-8-6 4-10 10-12 16z" fill="#3b2a20"/>
+          <circle cx="151" cy="120" r="6" fill="#f2c6a0"/><circle cx="219" cy="120" r="6" fill="#f2c6a0"/>
+          <g id="eyesN" stroke="#191329" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M168 124q5 4 10 0"/><path d="M192 124q5 4 10 0"/></g>
+          <g id="eyesUp" fill="#191329"><circle cx="173" cy="118" r="4"/><circle cx="197" cy="118" r="4"/>
+            <circle cx="174.5" cy="116.5" r="1.3" fill="#fff"/><circle cx="198.5" cy="116.5" r="1.3" fill="#fff"/></g>
+          <g id="eyesX" stroke="#191329" stroke-width="2" fill="none">
+            <circle cx="173" cy="122" r="6"/><circle cx="173" cy="122" r="2.5"/>
+            <circle cx="197" cy="122" r="6"/><circle cx="197" cy="122" r="2.5"/></g>
+          <path d="M179 139h12" stroke="#a0533f" stroke-width="3" stroke-linecap="round"/>
+          <g id="stars"><g id="starsSpin" fill="#e3c27a">
+            <path d="M185 52l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z"/>
+            <path d="M207 82l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" transform="translate(0 -10)"/>
+            <path d="M163 82l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6-4.5-4 6-1z" transform="translate(0 -10)"/>
+          </g></g>
+        </g>
+      </g>
+      <!-- сковородка -->
+      <g id="pan"><rect x="62" y="96" width="62" height="9" rx="4" fill="#5b3a29"/>
+        <circle cx="140" cy="100" r="22" fill="#2b2b33"/><circle cx="140" cy="100" r="16" fill="#3d3d48"/>
+        <path d="M128 92a14 14 0 0 1 10-6" stroke="#8a8a99" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+      <!-- подушка -->
+      <g id="pillow"><rect x="228" y="100" width="54" height="36" rx="14" fill="#f5ecdc"/>
+        <path d="M240 118h30" stroke="#d9cfba" stroke-width="2" stroke-linecap="round"/></g>
+      <!-- зона нажатия на него -->
+      <rect id="poke" x="145" y="78" width="80" height="160" fill="transparent" style="cursor:pointer"/>
+    </svg>
+    <div class="say" id="sayHim"></div>
+    <div class="say" id="sayMe"></div>
+  </div>
+
+  <div class="cap" id="cap" aria-live="polite">Выберите, с чего начать</div>
+
+  <div class="rage" aria-label="Шкала злости">
+    <span class="lbl">Злость</span>
+    <div class="tr"><div class="fl" id="fl"></div></div>
+    <span class="pc" id="pc">100%</span>
+  </div>
+
+  <div class="acts">
+    <button data-a="pan"><svg viewBox="0 0 26 26"><circle cx="16" cy="11" r="8" fill="#e3c27a"/><rect x="2" y="17" width="10" height="4" rx="2" transform="rotate(-40 7 19)" fill="#e3c27a"/></svg>Сковородка</button>
+    <button data-a="pillow"><svg viewBox="0 0 26 26"><rect x="3" y="7" width="20" height="13" rx="5" fill="#e3c27a"/></svg>Подушка</button>
+    <button data-a="phone"><svg viewBox="0 0 26 26"><rect x="7" y="2" width="12" height="22" rx="3" fill="#e3c27a"/><rect x="9" y="5" width="8" height="14" rx="1" fill="#2c2350"/></svg>Отобрать телефон</button>
+    <button data-a="beer"><svg viewBox="0 0 26 26"><rect x="9" y="9" width="8" height="15" rx="2" fill="#e3c27a"/><rect x="11" y="2" width="4" height="8" fill="#e3c27a"/></svg>Пиво в раковину</button>
+    <button data-a="photo"><svg viewBox="0 0 26 26"><path d="M3 5h10l-3 4 4 4-3 4 2 4H3z" fill="#e3c27a"/><path d="M15 5h8v16h-6l-1-4 3-4-4-4z" fill="#e3c27a" opacity=".6"/></svg>Порвать фото</button>
+    <button data-a="talk"><svg viewBox="0 0 26 26"><path d="M4 5h18v12H11l-5 4v-4H4z" fill="#e3c27a"/></svg>Поговорить</button>
+  </div>
+</section>
+
+<!-- финал -->
+<section id="end" class="hidden">
+  <h2>Легче?</h2>
+  <div class="tally" id="tally"></div>
+  <p class="ask">А теперь узнайте, что у него в голове.
+    <small>Ирина Владимировна – ИИ-астролог. Ответит на вопрос о нём, первый вопрос бесплатно.</small></p>
+  <div class="btns">
+    <button class="main" id="askIrina">Спросить Ирину про него</button>
+    <button id="join">Подписаться на группу Ирины</button>
+    <button id="story">Выложить результат в историю</button>
+    <button id="again">Ещё раз выпустить пар</button>
+  </div>
+  <div id="toast" aria-live="polite"></div>
+</section>
+
+</div>
+
+<script src="https://unpkg.com/@vkontakte/vk-bridge@2.14.1/dist/browser.min.js"></script>
+<script>
+const GROUP_ID=242425758;
+const IRINA_URL="https://vk.me/irina_horar?ref=vk_igra2";
+const GROUP_URL="https://vk.com/irina_horar";
+const APP_URL=""; // после регистрации: https://vk.com/appXXXXXXXX
+const bridge=window.vkBridge||null;
+if(bridge){try{bridge.send("VKWebAppInit")}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const scene=$("scene");
+const NAMES={pan:"Сковородка",pillow:"Подушка",phone:"Телефон отобран",beer:"Пиво в раковину",photo:"Фото пополам",talk:"Попытки поговорить"};
+const DUR={pan:1000,pillow:1900,phone:2300,beer:2100,photo:2100,talk:1900};
+const COST={pan:14,pillow:12,phone:12,beer:10,photo:12,talk:-8};
+const CAPS={
+  pan:["Бдыщ. Звёздочки кружатся, он в порядке","Сковородка тефлоновая. Совесть у него тоже – ничего не прилипает","Он сказал «ай» и снова уткнулся в телефон","Звон на всю квартиру. Соседи поняли без слов"],
+  pillow:["Подушкой – и он красиво съезжает с дивана","Лежит боком и листает ленту дальше. Талант","Подушка мягкая, а бросок – от души"],
+  phone:["Телефон отобран. Он впервые за вечер поднял глаза","«Эй, отдай». Теперь он знает, каково ждать ответа","Без телефона он не знает, куда деть руки"],
+  beer:["Пиво ушло в раковину. Буль-буль","Он даже не заметил. Заметит в пятницу","Раковина довольна. Хоть кто-то сегодня счастлив"],
+  photo:["Фото «мы на море» – пополам","Свою половинку оставьте – вы там хорошо вышли","Рамка цела. Её не жалко, она ни при чём"],
+  talk:["Вы: «Нам надо поговорить». Он: «Угу»","Злость подросла. Это нормально","Угу – это всё, на что хватило"]
+};
+const HIM={pan:"Ай",pillow:"Эй",talk:"Угу",poke:["Что?","Я занят","Сейчас отвечу","М?"]};
+const ME=["Нам надо поговорить","Ты меня слышишь?","Посмотри на меня"];
+
+let rage=100,busy=false,count={},ci={},pokeI=0,talkI=0;
+const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* звук */
+let ac=null;
+function A(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume()}catch(e){}return ac}
+function tone(type,f1,f2,dur,vol,delay=0){const a=A();if(!a)return;const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();
+  o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+function noise(dur,vol,freq,delay=0){const a=A();if(!a)return;const t=a.currentTime+delay,b=a.createBuffer(1,a.sampleRate*dur,a.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=b;f.type="lowpass";f.frequency.value=freq;g.gain.value=vol;
+  s.connect(f).connect(g).connect(a.destination);s.start(t)}
+const SND={
+  pan:()=>{tone("triangle",880,620,.7,.28,.33);tone("sine",1760,1500,.9,.12,.33);tone("sine",2400,2300,.5,.05,.33)},
+  pillow:()=>{noise(.25,.6,500,.3);noise(.3,.4,300,.75)},
+  phone:()=>{noise(.3,.35,1800,.05);tone("sine",300,900,.25,.1,.05)},
+  beer:()=>{for(let i=0;i<8;i++)tone("sine",300+Math.random()*500,900+Math.random()*400,.07,.12,.8+i*.12)},
+  photo:()=>{noise(.12,.5,4000,.05);noise(.25,.45,3000,.25)},
+  talk:()=>{tone("sine",220,200,.25,.12,.9)}
+};
+function buzz(ms){if(navigator.vibrate){try{navigator.vibrate(ms)}catch(e){}}}
+
+function play(cls){scene.classList.remove(cls);void scene.getBoundingClientRect();scene.classList.add(cls)}
+function say(el,text,ms){el.textContent=text;el.classList.add("on");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("on"),ms)}
+function setRage(v){rage=Math.max(0,Math.min(100,v));$("fl").style.width=rage+"%";$("pc").textContent=Math.round(rage)+"%"}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function act(a){
+  if(busy)return;busy=true;
+  document.querySelectorAll(".acts button").forEach(b=>b.disabled=true);
+  count[a]=(count[a]||0)+1;
+  const list=CAPS[a];ci[a]=(ci[a]||0);$("cap").textContent=list[ci[a]%list.length];ci[a]++;
+  play("a-"+a);SND[a]();
+  if(a==="pan"){setTimeout(()=>{buzz(40);say($("sayHim"),HIM.pan,900)},330)}
+  if(a==="phone"){setTimeout(()=>say($("sayHim"),"Эй, отдай",1400),450)}
+  if(a==="pillow"){setTimeout(()=>{buzz(25);say($("sayHim"),HIM.pillow,900)},330)}
+  if(a==="talk"){say($("sayMe"),ME[talkI++%ME.length],1200);setTimeout(()=>say($("sayHim"),HIM.talk,1000),900)}
+  setTimeout(()=>setRage(rage-COST[a]),a==="talk"?1000:400);
+  await wait(reduce?400:DUR[a]);
+  scene.classList.remove("a-"+a);
+  document.querySelectorAll(".acts button").forEach(b=>b.disabled=false);
+  busy=false;
+  if(rage<=0){await wait(500);finish()}
+}
+document.querySelectorAll(".acts button").forEach(b=>b.onclick=()=>act(b.dataset.a));
+$("poke").onclick=()=>{if(busy)return;play("a-poke");tone("sine",500,700,.12,.08);say($("sayHim"),HIM.poke[pokeI++%HIM.poke.length],900)};
+
+function finish(){
+  const total=Object.values(count).reduce((s,x)=>s+x,0);
+  $("tally").innerHTML=`<span>Злость</span><b>100% → 0%</b>`+
+    Object.keys(NAMES).filter(k=>count[k]).map(k=>`<span>${NAMES[k]}</span><b>${count[k]}</b>`).join("")+
+    `<span>Он ответил</span><b>0 раз</b>`;
+  window.__res={total};
+  $("game").classList.add("hidden");$("end").classList.remove("hidden");scrollTo(0,0);
+}
+function reset(){rage=100;count={};ci={};setRage(100);$("cap").textContent="Выберите, с чего начать";$("toast").textContent="";
+  $("end").classList.add("hidden");$("game").classList.remove("hidden")}
+
+$("go").onclick=()=>{A();$("start").classList.add("hidden");$("game").classList.remove("hidden")};
+$("again").onclick=reset;
+function toast(t){$("toast").textContent=t}
+$("askIrina").onclick=()=>window.open(IRINA_URL,"_blank");
+$("join").onclick=async()=>{
+  if(bridge){try{const r=await bridge.send("VKWebAppJoinGroup",{group_id:GROUP_ID});if(r&&r.result){toast("Вы подписались на группу Ирины");return}}catch(e){toast("Подписка не оформлена. Можно нажать ещё раз");return}}
+  window.open(GROUP_URL,"_blank");
+};
+
+/* картинка для истории 1080×1920 */
+async function storyImage(){
+  try{await document.fonts.load('600 120px Unbounded');await document.fonts.load('500 40px "Golos Text"');await document.fonts.ready}catch(e){}
+  const W=1080,H=1920,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const g=x.createRadialGradient(W/2,0,50,W/2,300,1500);g.addColorStop(0,"#3a2f68");g.addColorStop(1,"#191329");x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.textAlign="center";
+  x.fillStyle="#b9addb";x.font='500 44px "Golos Text"';x.fillText("Игра «Антистресс: он опять не ответил»",W/2,300);
+  x.fillStyle="#f5ecdc";x.font='500 56px "Golos Text"';x.fillText("Моя злость",W/2,480);
+  x.fillStyle="#e3c27a";x.font='600 150px Unbounded';x.fillText("100% → 0%",W/2,660);
+  let y=860;x.font='500 50px "Golos Text"';
+  Object.keys(NAMES).filter(k=>count[k]).forEach(k=>{x.textAlign="left";x.fillStyle="#b9addb";x.fillText(NAMES[k],150,y);
+    x.textAlign="right";x.fillStyle="#f5ecdc";x.fillText(String(count[k]),W-150,y);y+=88});
+  x.textAlign="left";x.fillStyle="#b9addb";x.fillText("Он ответил",150,y);x.textAlign="right";x.fillStyle="#e86a5a";x.fillText("0 раз",W-150,y);
+  x.textAlign="center";x.fillStyle="#f5ecdc";x.font='600 64px "Golos Text"';x.fillText("А тебе полегчает?",W/2,H-400);
+  x.fillStyle="#b9addb";x.font='500 44px "Golos Text"';x.fillText("Сыграй во ВКонтакте",W/2,H-320);
+  x.fillStyle="#e3c27a";x.font='500 40px "Golos Text"';x.fillText("Ирина Владимировна – ИИ-астролог",W/2,H-190);
+  return c.toDataURL("image/jpeg",0.9);
+}
+$("story").onclick=async()=>{
+  const img=await storyImage();
+  if(bridge){try{const p={background_type:"image",blob:img};if(APP_URL)p.attachment={text:"go_to",type:"url",url:APP_URL};await bridge.send("VKWebAppShowStoryBox",p);return}catch(e){}}
+  try{const f=new File([await (await fetch(img)).blob()],"antistress.jpg",{type:"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Антистресс"});return}}catch(e){}
+  const a=document.createElement("a");a.href=img;a.download="antistress.jpg";a.click();toast("Картинка сохранена – её можно выложить в историю");
+};
+</script>
+</body>
+</html>
